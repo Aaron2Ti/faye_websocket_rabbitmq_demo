@@ -12,7 +12,7 @@ EM.run {
   ws.onopen = lambda do |event|
     p [:open]
 
-    ws.send MultiJson.dump(msg: "Hello, WebSocket!")
+    ws.send MultiJson.dump(job_id: 'J-1', job_type: 'restart_apache')
   end
 
   ws.onmessage = lambda do |event|
