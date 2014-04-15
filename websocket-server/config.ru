@@ -1,11 +1,18 @@
 require 'faye/websocket'
+require 'multi_json'
+
+Faye::WebSocket.load_adapter('thin')
 
 App = lambda do |env|
   if Faye::WebSocket.websocket?(env)
     ws = Faye::WebSocket.new(env)
 
     ws.on :message do |event|
-      ws.send event.data
+      request = MultiJson.load event.data
+
+      puts request
+
+      ws.send MultiJson.dump(progress: 2)
     end
 
     ws.on :close do |event|
