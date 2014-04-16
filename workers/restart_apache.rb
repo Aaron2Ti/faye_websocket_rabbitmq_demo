@@ -8,7 +8,7 @@ EM.run {
 
   queue.bind('com.rakuten.chef.direct', routing_key: 'com.rakuten.chef.restart_apache')
 
-  queue.subscribe do |payload|
-    puts "Queue #{queue.name} received: #{payload}"
+  queue.subscribe do |metadata, payload|
+    puts "Queue #{queue.name} received: #{payload} -- #{metadata.reply_to}"
   end
 }

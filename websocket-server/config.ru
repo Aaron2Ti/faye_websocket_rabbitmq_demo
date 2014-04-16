@@ -9,6 +9,8 @@ App = lambda do |env|
   channel    = AMQP::Channel.new connection
   exchange   = channel.direct 'com.rakuten.chef.direct', durable: true
 
+  identity = 'an_uniq_key' # TODO
+
   if Faye::WebSocket.websocket?(env)
     ws = Faye::WebSocket.new(env)
 
@@ -17,9 +19,12 @@ App = lambda do |env|
 
       case request['job_type']
       when 'restart_apache'
-        payload = MultiJson.dump request.merge(id: 'an uniq key(TODO)')
+        payload = MultiJson.dump request
 
-        exchange.publish payload, persistent: true, routing_key: 'com.rakuten.chef.restart_apache'
+        exchange.publish payload,
+                         persistent: true,
+                         routing_key: 'com.rakuten.chef.restart_apache',
+                         reply_to: identity
       end
 
       ws.send MultiJson.dump(progress: 2)
