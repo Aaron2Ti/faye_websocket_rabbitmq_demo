@@ -13,8 +13,7 @@ EM.run {
 
     EventMachine.add_timer(1) {
       5.times do |i|
-        puts "Working #{i}"
-        exchange.publish "process: #{25 * i}", routing_key: metadata.reply_to
+        exchange.publish "processed: #{25 * i}", routing_key: metadata.reply_to
       end
     }
   end

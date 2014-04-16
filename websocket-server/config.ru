@@ -36,7 +36,7 @@ App = lambda do |env|
       queue.bind 'com.rakuten.chef.rpc.fanout', routing_key: identity
 
       queue.subscribe do |metadata, payload|
-        ws.send MultiJson.dump(payload)
+        ws.send payload
       end
     end
 
