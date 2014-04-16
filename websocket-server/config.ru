@@ -4,10 +4,18 @@ require 'amqp'
 
 Faye::WebSocket.load_adapter('thin')
 
+
 App = lambda do |env|
   connection = AMQP.connect host: '127.0.0.1'
   channel    = AMQP::Channel.new connection
   exchange   = channel.direct 'com.rakuten.chef.direct', durable: true
+
+  dispatch_payload = ->(payload, reply_to) do
+    exchange.publish payload,
+                     persistent: true,
+                     routing_key: 'com.rakuten.chef.restart_apache',
+                     reply_to: reply_to
+  end
 
   identity = 'an_uniq_key' # TODO
 
@@ -21,10 +29,7 @@ App = lambda do |env|
       when 'restart_apache'
         payload = MultiJson.dump request
 
-        exchange.publish payload,
-                         persistent: true,
-                         routing_key: 'com.rakuten.chef.restart_apache',
-                         reply_to: identity
+        dispatch_payload.call payload, identity
       end
 
       ws.send MultiJson.dump(progress: 2)
