@@ -11,17 +11,17 @@ EM.run {
   exchange = channel.direct 'com.rakuten.chef.direct', durable: true
 
   queue.subscribe do |metadata, payload|
-    EM.add_timer(5) {
+    EM.add_timer(3) {
       puts 'send message' + metadata.reply_to
       exchange.publish "processed: 25", routing_key: metadata.reply_to
 
-      EM.add_timer(5) {
+      EM.add_timer(2) {
         exchange.publish "processed: 50", routing_key: metadata.reply_to
 
-        EM.add_timer(5) {
+        EM.add_timer(3) {
           exchange.publish "processed: 75", routing_key: metadata.reply_to
 
-          EM.add_timer(5) {
+          EM.add_timer(3) {
             exchange.publish "processed: 100", routing_key: metadata.reply_to
           }
         }
