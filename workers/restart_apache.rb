@@ -11,10 +11,20 @@ EM.run {
   queue.subscribe do |metadata, payload|
     exchange = channel.fanout 'com.rakuten.chef.rpc.fanout', auto_delete: true
 
-    EventMachine.add_timer(1) {
-      5.times do |i|
-        exchange.publish "processed: #{25 * i}", routing_key: metadata.reply_to
-      end
+    EM.add_timer(1) {
+      exchange.publish "processed: 25", routing_key: metadata.reply_to
+
+      EM.add_timer(1) {
+        exchange.publish "processed: 50", routing_key: metadata.reply_to
+
+        EM.add_timer(1) {
+          exchange.publish "processed: 75", routing_key: metadata.reply_to
+
+          EM.add_timer(1) {
+            exchange.publish "processed: 100", routing_key: metadata.reply_to
+          }
+        }
+      }
     }
   end
 }
