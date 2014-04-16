@@ -21,7 +21,8 @@ App = lambda do |env|
   end
   # }}}
 
-  if Faye::WebSocket.websocket?(env)
+  # {{{
+  ws_handler = ->(env) do
     ws = Faye::WebSocket.new(env)
 
     process_result_queue = channel.queue '', exclusive: true
@@ -52,6 +53,11 @@ App = lambda do |env|
 
     # Return async Rack response
     ws.rack_response
+  end
+  # }}}
+
+  if Faye::WebSocket.websocket?(env)
+    ws_handler.call env
 
   else
     # Normal HTTP request

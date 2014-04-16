@@ -1,4 +1,5 @@
 require 'amqp'
+require 'multi_json'
 
 EM.run {
   connection = AMQP.connect host: '127.0.0.1'
@@ -10,19 +11,28 @@ EM.run {
 
   exchange = channel.direct 'com.rakuten.chef.direct', durable: true
 
+  process_result = ->(job, i) do
+    if i == 4
+      "Job #{job['job_type']} is processed: 100%"
+    else
+      "Job #{job['job_type']} is processed: #{i * 20 + rand(20)}%"
+    end
+  end
+
   queue.subscribe do |metadata, payload|
-    EM.add_timer(3) {
-      puts 'send message' + metadata.reply_to
-      exchange.publish "processed: 25", routing_key: metadata.reply_to
+    job = MultiJson.load payload
+
+    EM.add_timer(2) {
+      exchange.publish process_result.(job, 1), routing_key: metadata.reply_to
 
       EM.add_timer(2) {
-        exchange.publish "processed: 50", routing_key: metadata.reply_to
+        exchange.publish process_result.(job, 2), routing_key: metadata.reply_to
 
-        EM.add_timer(3) {
-          exchange.publish "processed: 75", routing_key: metadata.reply_to
+        EM.add_timer(2) {
+          exchange.publish process_result.(job, 3), routing_key: metadata.reply_to
 
-          EM.add_timer(3) {
-            exchange.publish "processed: 100", routing_key: metadata.reply_to
+          EM.add_timer(2) {
+            exchange.publish process_result.(job, 4), routing_key: metadata.reply_to
           }
         }
       }
