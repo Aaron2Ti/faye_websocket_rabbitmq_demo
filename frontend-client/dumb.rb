@@ -16,13 +16,13 @@ EM.run {
   end
 
   ws.onmessage = lambda do |event|
-    p [:message, MultiJson.load(event.data)]
-
-    ws.close
+    p [:message, event.data]
+    # ws.close
   end
 
   ws.onclose = lambda do |event|
     p [:close, event.code, event.reason]
+
     EM.stop
   end
 }
