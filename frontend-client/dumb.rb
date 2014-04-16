@@ -37,6 +37,7 @@ EM.run {
   ws.onopen = lambda do |event|
     send_job.call ws, fake_job_payload.call('restart_apache')
     send_job.call ws, fake_job_payload.call('gracefully_kill_it')
+    send_job.call ws, fake_job_payload.call('recent_5_current_time')
   end
 
   ws.onmessage = lambda do |event|

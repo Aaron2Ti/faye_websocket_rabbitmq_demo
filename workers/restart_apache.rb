@@ -12,10 +12,15 @@ EM.run {
   exchange = channel.direct 'com.rakuten.chef.direct', durable: true
 
   process_result = ->(job, i) do
-    if i == 4
-      "Job #{job['job_type']} is processed: 100%"
+    if job['job_type'] == 'recent_5_current_time'
+      "The #{i} call of current time is #{Time.now}"
+
     else
-      "Job #{job['job_type']} is processed: #{i * 20 + rand(20)}%"
+      if i == 4
+        "Job #{job['job_type']} is processed: 100%"
+      else
+        "Job #{job['job_type']} is processed: #{i * 20 + rand(20)}%"
+      end
     end
   end
 
