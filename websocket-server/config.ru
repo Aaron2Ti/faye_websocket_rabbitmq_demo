@@ -20,26 +20,31 @@ App = lambda do |env|
   if Faye::WebSocket.websocket?(env)
     ws = Faye::WebSocket.new(env)
 
-    queue = channel.queue '', auto_delete: true
+    queue = channel.queue '', exclusive: true
 
     ws.on :message do |event|
       payload  = event.data
       request  = MultiJson.load event.data
       identity = request['identity']
 
-      queue.bind 'com.rakuten.chef.rpc.direct', routing_key: identity
+      queue.bind 'com.rakuten.chef.direct', routing_key: identity
 
       dispatch_payload.call payload, identity
 
       queue.subscribe do |metadata, payload|
+        puts 'recieved process results'
         ws.send payload
+      end
+
+      ws.on :close do |event|
+        puts "deleting queue: #{queue.name}"
+
+        queue.delete
       end
     end
 
     ws.on :close do |event|
       p [:close, event.code, event.reason]
-
-      queue.delete
 
       ws = nil
     end
