@@ -25,7 +25,7 @@ App = lambda do |env|
     ws.on :message do |event|
       payload  = event.data
       request  = MultiJson.load event.data
-      identity = request['session_id']
+      identity = request['identity']
 
       queue.bind 'com.rakuten.chef.rpc.direct', routing_key: identity
 

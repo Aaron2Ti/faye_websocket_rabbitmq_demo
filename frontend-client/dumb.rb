@@ -10,14 +10,14 @@ EM.run {
   url = "ws://localhost:#{port}/"
   ws  = Faye::WebSocket::Client.new url, nil
 
-  session_id = uuid.generate
+  identity = uuid.generate
 
   puts "Connecting to #{ws.url}"
 
   ws.onopen = lambda do |event|
     p [:open]
 
-    payload = MultiJson.dump session_id: session_id,
+    payload = MultiJson.dump identity: identity,
                              job_id: 'J-1',
                              job_type: 'restart_apache'
 
