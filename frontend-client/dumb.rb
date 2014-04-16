@@ -11,7 +11,6 @@ identity = uuid.generate
 
 new_job = ->(job_type) do
   {
-    identity: identity,
     job_id:   uuid.generate,
     job_type: job_type,
     args:     'whatever...'
@@ -30,7 +29,7 @@ end
 # }}}
 
 EM.run {
-  url = "ws://localhost:#{port}/"
+  url = "ws://localhost:#{port}/?identity=#{identity}"
   ws  = Faye::WebSocket::Client.new url, nil
 
   puts "Connecting to #{ws.url}"

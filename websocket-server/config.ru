@@ -1,6 +1,7 @@
 require 'faye/websocket'
 require 'multi_json'
 require 'amqp'
+require 'pry'
 
 Faye::WebSocket.load_adapter('thin')
 
@@ -25,7 +26,13 @@ App = lambda do |env|
   ws_handler = ->(env) do
     ws = Faye::WebSocket.new(env)
 
+    req      = Rack::Request.new env
+    identity = req.params['identity']
+
     process_result_queue = channel.queue '', exclusive: true
+
+    process_result_queue.bind 'com.rakuten.chef.direct', routing_key: identity
+
     process_result_queue.subscribe do |metadata, payload|
       puts "Send the processing result to client #{payload}"
 
@@ -34,10 +41,7 @@ App = lambda do |env|
 
     ws.on :message do |event|
       request  = MultiJson.load event.data
-      identity = request['identity']
       payload  = event.data
-
-      process_result_queue.bind 'com.rakuten.chef.direct', routing_key: identity
 
       dispatch_payload.call payload, identity
     end
