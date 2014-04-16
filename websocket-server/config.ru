@@ -13,7 +13,7 @@ App = lambda do |env|
   dispatch_payload = ->(payload, reply_to) do
     chef_direct_exchange.publish payload,
                                  persistent: true,
-                                 routing_key: 'com.rakuten.chef.restart_apache',
+                                 routing_key: 'restart_apache',
                                  reply_to: reply_to
   end
 
@@ -21,6 +21,9 @@ App = lambda do |env|
 
   if Faye::WebSocket.websocket?(env)
     ws = Faye::WebSocket.new(env)
+
+    queue = channel.queue '', auto_delete: true
+    queue.bind 'com.rakuten.chef.rpc.direct', routing_key: identity
 
     ws.on :message do |event|
       request = MultiJson.load event.data
@@ -32,9 +35,6 @@ App = lambda do |env|
         dispatch_payload.call payload, identity
       end
 
-      queue = channel.queue '', auto_delete: true
-      queue.bind 'com.rakuten.chef.rpc.fanout', routing_key: identity
-
       queue.subscribe do |metadata, payload|
         ws.send payload
       end
@@ -42,6 +42,8 @@ App = lambda do |env|
 
     ws.on :close do |event|
       p [:close, event.code, event.reason]
+      queue.delete
+      # queue.unbind 'com.rakuten.chef.rpc.fanout', routing_key: identity
 
       ws = nil
     end

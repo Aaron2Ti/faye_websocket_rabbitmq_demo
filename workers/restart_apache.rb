@@ -6,11 +6,11 @@ EM.run {
 
   queue = channel.queue 'com.rakuten.chef.direct.apaches', durable: true
 
-  queue.bind 'com.rakuten.chef.direct', routing_key: 'com.rakuten.chef.restart_apache'
+  queue.bind 'com.rakuten.chef.direct', routing_key: 'restart_apache'
+
+  exchange = channel.direct 'com.rakuten.chef.rpc.direct', auto_delete: true
 
   queue.subscribe do |metadata, payload|
-    exchange = channel.fanout 'com.rakuten.chef.rpc.fanout', auto_delete: true
-
     EM.add_timer(1) {
       exchange.publish "processed: 25", routing_key: metadata.reply_to
 
