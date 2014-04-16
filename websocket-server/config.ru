@@ -17,23 +17,19 @@ App = lambda do |env|
                                  reply_to: reply_to
   end
 
-  identity = 'an_uniq_key' # TODO
-
   if Faye::WebSocket.websocket?(env)
     ws = Faye::WebSocket.new(env)
 
     queue = channel.queue '', auto_delete: true
-    queue.bind 'com.rakuten.chef.rpc.direct', routing_key: identity
 
     ws.on :message do |event|
-      request = MultiJson.load event.data
+      payload  = event.data
+      request  = MultiJson.load event.data
+      identity = request['session_id']
 
-      case request['job_type']
-      when 'restart_apache'
-        payload = MultiJson.dump request
+      queue.bind 'com.rakuten.chef.rpc.direct', routing_key: identity
 
-        dispatch_payload.call payload, identity
-      end
+      dispatch_payload.call payload, identity
 
       queue.subscribe do |metadata, payload|
         ws.send payload
@@ -42,8 +38,8 @@ App = lambda do |env|
 
     ws.on :close do |event|
       p [:close, event.code, event.reason]
+
       queue.delete
-      # queue.unbind 'com.rakuten.chef.rpc.fanout', routing_key: identity
 
       ws = nil
     end

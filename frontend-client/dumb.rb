@@ -1,18 +1,27 @@
 require 'faye/websocket'
 require 'multi_json'
+require 'uuid'
 
 port = ARGV[0] || 3000
+
+uuid = UUID.new
 
 EM.run {
   url = "ws://localhost:#{port}/"
   ws  = Faye::WebSocket::Client.new url, nil
+
+  session_id = uuid.generate
 
   puts "Connecting to #{ws.url}"
 
   ws.onopen = lambda do |event|
     p [:open]
 
-    ws.send MultiJson.dump(job_id: 'J-1', job_type: 'restart_apache')
+    payload = MultiJson.dump session_id: session_id,
+                             job_id: 'J-1',
+                             job_type: 'restart_apache'
+
+    ws.send payload
   end
 
   ws.onmessage = lambda do |event|
