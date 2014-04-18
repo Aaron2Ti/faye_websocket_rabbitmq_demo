@@ -5,11 +5,11 @@ EM.run {
   connection = AMQP.connect host: '127.0.0.1'
   channel    = AMQP::Channel.new(connection)
 
-  queue = channel.queue 'com.rakuten.chef.direct.apaches', durable: true
+  queue = channel.queue 'com.aaron2ti.chef.direct.apaches', durable: true
 
-  queue.bind 'com.rakuten.chef.direct', routing_key: 'restart_apache'
+  queue.bind 'com.aaron2ti.chef.direct', routing_key: 'restart_apache'
 
-  exchange = channel.direct 'com.rakuten.chef.direct', durable: true
+  exchange = channel.direct 'com.aaron2ti.chef.direct', durable: true
 
   process_result = ->(job, i) do
     if job['job_type'] == 'recent_5_current_time'

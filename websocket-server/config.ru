@@ -10,7 +10,7 @@ App = lambda do |env|
   # {{{
   connection           = AMQP.connect host: '127.0.0.1'
   channel              = AMQP::Channel.new connection
-  chef_direct_exchange = channel.direct 'com.rakuten.chef.direct', durable: true
+  chef_direct_exchange = channel.direct 'com.aaron2ti.chef.direct', durable: true
   # }}}
 
   # {{{
@@ -31,7 +31,7 @@ App = lambda do |env|
 
     process_result_queue = channel.queue '', exclusive: true
 
-    process_result_queue.bind 'com.rakuten.chef.direct', routing_key: identity
+    process_result_queue.bind 'com.aaron2ti.chef.direct', routing_key: identity
 
     process_result_queue.subscribe do |metadata, payload|
       puts "Send the processing result to client #{payload}"
